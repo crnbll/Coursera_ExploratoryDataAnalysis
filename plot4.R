@@ -1,0 +1,110 @@
+## Set the locale to United States English
+Sys.setlocale(category = "LC_ALL", locale = "English")
+
+## If necessary, download the ZIP file from the web
+## and extract it in a directory named data.
+filePath <- "data/household_power_consumption.txt"
+if (!file.exists(filePath)) {
+    tempFile <- tempfile()
+    zipFile <- download.file(
+        url = "https://archive.ics.uci.edu/ml/machine-learning-databases/00235/household_power_consumption.zip",
+        destfile = tempFile
+    )
+    unzip(zipfile = tempFile, exdir = "data")
+}
+
+## Create a dataframe from the downloaded file.
+## In this file, the field separator character is ";"
+## and missing values are coded as "?".
+data <- read.table(
+    file = filePath,
+    header = TRUE,
+    sep = ";",
+    na.strings = "?"
+)
+
+## Convert the Date and Time variables to DateTime,
+## replace the Time variables with the resulting DateTime variables
+## and change the name of the Time column to DateTime.
+data$Time <- as.POSIXlt(
+    x = paste(data$Date, data$Time), tz = "CET", format = "%d/%m/%Y %H:%M:%S"
+)
+names(data)[names(data) == "Time"] = "DateTime"
+
+## Subset the dataframe
+## removing the rows corresponding to datetimes we will not consider
+## and removing the now useless Date column.
+data <- subset(
+    x = data,
+    subset = DateTime >= "2007-02-01 00:00:00 CET"
+             & DateTime <= "2007-02-02 23:59:00 CET",
+    select = -Date
+)
+
+## Open the PNG graphic device
+## and create a file plot4.png in the figure directory.
+## The width and height of this device are the default ones: 480*480 pixels.
+## The background color is set to be transparent
+## and the rendering to be antialiased.
+png(
+    filename = "plot4.png",
+    bg = "transparent",
+    type = "cairo",
+    antialias = "default"
+)
+
+## Set the width of the margins and the number of columns and rows 
+par(
+    mar = c(4, 4, 4, 2),
+    mfcol = c(2, 2)
+)
+
+## Construct the top left plot
+plot(
+    x = data$DateTime,
+    y = data$Global_active_power,
+    type = "l", ## Lines
+    xlab = "",
+    ylab = "Global Active Power"
+)
+
+## Construct the bottom left plot
+plot(
+    x = data$DateTime,
+    y = data$Sub_metering_1,
+    type = "l", ## Lines
+    xlab = "",
+    ylab = "Energy sub metering"
+)
+
+lines(x = data$DateTime, y = data$Sub_metering_2, col = "red")
+lines(x = data$DateTime, y = data$Sub_metering_3, col = "blue")
+
+legend(
+    x = "topright",
+    legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"),
+    col = c("black", "red", "blue"),
+    lty = 1, ## Line type
+    bty = "n" ## Box type
+)
+
+## Construct the top right plot
+plot(
+    x = data$DateTime,
+    y = data$Voltage,
+    type = "l", ## Lines
+    xlab = "datetime",
+    ylab = "Voltage"
+)
+
+## Construct the bottom right plot
+plot(
+    x = data$DateTime,
+    y = data$Global_reactive_power,
+    type = "l",  ## Lines
+    xlab = "datetime",
+    ylab = "Global_reactive_power"
+)
+
+## Close the graphic device
+dev.off()
