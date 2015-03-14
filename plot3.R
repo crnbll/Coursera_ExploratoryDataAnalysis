@@ -41,8 +41,7 @@ data <- subset(
     select = -Date
 )
 
-## Open the PNG graphic device
-## and create a file plot3.png in the figure directory.
+## Open the PNG graphic device and create a file named plot3.png.
 ## The width and height of this device are the default ones: 480*480 pixels.
 ## The background color is set to be transparent
 ## and the rendering to be antialiased.
